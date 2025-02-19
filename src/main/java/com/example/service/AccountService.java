@@ -26,12 +26,13 @@ public class AccountService {
     public Account logIntoAccount(Account account) {
         Optional<Account> optionalAccount = this.accountRepository.findByUsernameAndPassword(account.getUsername(), account.getPassword());
         if (optionalAccount.isPresent()) {
+            System.out.println(optionalAccount.get().toString());
             return optionalAccount.get();
         }
         return null;
     }
 
-    public boolean accountExists(String username, int account_id, boolean byUsername) {
+    public boolean accountExists(int account_id) {
         return this.accountRepository.existsById(account_id);
     }
 

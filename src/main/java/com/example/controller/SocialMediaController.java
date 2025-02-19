@@ -65,17 +65,20 @@ public class SocialMediaController {
             return ResponseEntity.status(401).body(account);
 
         }
-        return ResponseEntity.status(HttpStatus.OK).body(account);
+        return ResponseEntity.status(HttpStatus.OK).body(loggedAccount);
     }
 
     @PostMapping("/messages")
     public ResponseEntity<Message> postMessage(@RequestBody Message message) {
-        try {
-            this.messageService.addMessage(message);
-            return ResponseEntity.status(HttpStatus.OK).body(message);
-        } catch (Exception e) {
-            return ResponseEntity.status(400).body(message);
+        int posted_by = message.getPostedBy();
+        if (this.accountService.accountExists(posted_by)) {
+
+            Message addedMessage = this.messageService.addMessage(message);
+            if (addedMessage != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(message);
+            }
         }
+        return ResponseEntity.status(400).body(message);
     }
 
     @GetMapping("/messages")
@@ -101,17 +104,21 @@ public class SocialMediaController {
 
     @PatchMapping("/messages/{message_id}")
     public ResponseEntity<Integer> updateMessage(@PathVariable String message_id, @RequestBody Message message) {
-        try {
-            this.messageService.updateMessage(Integer.parseInt(message_id), message);
+        if (this.messageService.updateMessage(Integer.parseInt(message_id), message)) {
             return ResponseEntity.status(HttpStatus.OK).body(1);
-        } catch (Exception e) {
+        } else {
             return ResponseEntity.status(400).body(0);
         }
     }
 
     @DeleteMapping("/messages/{message_id}")
     public ResponseEntity<Integer> deleteMessage(@PathVariable String message_id) {
-        this.messageService.deleteMessage(Integer.parseInt(message_id));
-        return ResponseEntity.status(200).body(1);
+        try {
+            this.messageService.deleteMessage(Integer.parseInt(message_id));
+            return ResponseEntity.status(200).body(1);
+        } catch (Exception e) {
+            return ResponseEntity.status(200).build();
+        }
+
     }
 }
