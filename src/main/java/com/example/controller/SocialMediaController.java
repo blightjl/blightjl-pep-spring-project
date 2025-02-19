@@ -22,15 +22,19 @@ import com.example.service.AccountService;
 import com.example.service.MessageService;
 
 /**
- * TODO: You will need to write your own endpoints and handlers for your controller using Spring. The endpoints you will need can be
- * found in readme.md as well as the test cases. You be required to use the @GET/POST/PUT/DELETE/etc Mapping annotations
- * where applicable as well as the @ResponseBody and @PathVariable annotations. You should
- * refer to prior mini-project labs and lecture materials for guidance on how a controller may be built.
+ * TODO: You will need to write your own endpoints and handlers for your
+ * controller using Spring. The endpoints you will need can be
+ * found in readme.md as well as the test cases. You be required to use
+ * the @GET/POST/PUT/DELETE/etc Mapping annotations
+ * where applicable as well as the @ResponseBody and @PathVariable annotations.
+ * You should
+ * refer to prior mini-project labs and lecture materials for guidance on how a
+ * controller may be built.
  */
 @RestController
 public class SocialMediaController {
     // injecting the relevant services that may be required
-   
+
     AccountService accountService;
 
     MessageService messageService;
@@ -43,77 +47,71 @@ public class SocialMediaController {
 
     @PostMapping("/register")
     public ResponseEntity<Account> postAccount(@RequestBody Account account) {
-        if (false){
-            return ResponseEntity.status(400).body(account);
+        if (this.accountService.usernameExists(account.getUsername())) {
+            return ResponseEntity.status(409).body(account);
+
         }
-        {
-            // return ResponseEntity.status(409).body(account);    
+        Account createdAccount = this.accountService.registerAccount(account);
+        if (createdAccount == null) {
+            return ResponseEntity.status(400).body(account);
         }
         return ResponseEntity.status(HttpStatus.OK).body(account);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Account> loginAccount(@RequestBody Account account, @RequestParam String password) {
-        if (false){
+    public ResponseEntity<Account> loginAccount(@RequestBody Account account) {
+        Account loggedAccount = accountService.logIntoAccount(account);
+        if (loggedAccount == null) {
             return ResponseEntity.status(401).body(account);
-        }
-        {
-            // return ResponseEntity.status(409).body(account);    
+
         }
         return ResponseEntity.status(HttpStatus.OK).body(account);
     }
 
     @PostMapping("/messages")
     public ResponseEntity<Message> postMessage(@RequestBody Message message) {
-        if (false){
+        try {
+            this.messageService.addMessage(message);
+            return ResponseEntity.status(HttpStatus.OK).body(message);
+        } catch (Exception e) {
             return ResponseEntity.status(400).body(message);
         }
-        {
-            // return ResponseEntity.status(409).body(account);    
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(message);
     }
 
     @GetMapping("/messages")
     public ResponseEntity<List<Message>> getMessages() {
-        return ResponseEntity.status(HttpStatus.OK).body();
+        List<Message> loMessages = this.messageService.getAllMessages();
+        return ResponseEntity.status(HttpStatus.OK).body(loMessages);
     }
 
     @GetMapping("/messages/{message_id}")
     public ResponseEntity<Message> getMessage(@PathVariable String message_id) {
-        if (false){
-            return ResponseEntity.status(OK).body();
+        Optional<Message> message = this.messageService.getMessageByID(Integer.parseInt(message_id));
+        if (!message.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).build();
         }
-        {
-            // return ResponseEntity.status(409).body(account);    
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(message);
+        return ResponseEntity.status(HttpStatus.OK).body(message.get());
     }
 
     @GetMapping("/accounts/{account_id}/messages")
     public ResponseEntity<List<Message>> getMessagesByAccount(@PathVariable String account_id) {
-        return ResponseEntity.status(HttpStatus.OK).body(messages);
+        List<Message> loMessagesByAccountID = this.messageService.getMessagesByAccountID(Integer.parseInt(account_id));
+        return ResponseEntity.status(HttpStatus.OK).body(loMessagesByAccountID);
     }
 
     @PatchMapping("/messages/{message_id}")
-    public ResponseEntity<Message> updateMessage(@PathVariable String message_id, @RequestBody Message message) {
-        if (false){
-            return ResponseEntity.status(400).body(message);
+    public ResponseEntity<Integer> updateMessage(@PathVariable String message_id, @RequestBody Message message) {
+        try {
+            this.messageService.updateMessage(Integer.parseInt(message_id), message);
+            return ResponseEntity.status(HttpStatus.OK).body(1);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(0);
         }
-        {
-            // return ResponseEntity.status(409).body(account);    
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(num rows updated);
     }
 
     @DeleteMapping("/messages/{message_id}")
-    public ResponseEntity<Message> deleteMessage(@PathVariable String message_id) {
-        if (false){
-            return ResponseEntity.status(200).body();
-        }
-        {
-            // return ResponseEntity.status(409).body(account);    
-        }
-        return ResponseEntity.status(200).body(num of rows deleted);
+    public ResponseEntity<Integer> deleteMessage(@PathVariable String message_id) {
+        this.messageService.deleteMessage(Integer.parseInt(message_id));
+        return ResponseEntity.status(200).body(1);
     }
 }
