@@ -33,10 +33,9 @@ import com.example.service.MessageService;
  */
 @RestController
 public class SocialMediaController {
-    // injecting the relevant services that may be required
+    // Injecting the Account and Message services that are required via Autowired
 
     AccountService accountService;
-
     MessageService messageService;
 
     @Autowired
@@ -45,6 +44,11 @@ public class SocialMediaController {
         this.messageService = messageService;
     }
 
+    /**
+     * The Post mapping at endpoint /register using the accountService to attempt a registering of an account.
+     * @param account the account to be registered
+     * @return the ResponseEntity<Account> object that returns status {OK if success, 409 if username exists, 400 or other errors} and the body to be registered
+     */
     @PostMapping("/register")
     public ResponseEntity<Account> postAccount(@RequestBody Account account) {
         if (this.accountService.usernameExists(account.getUsername())) {
@@ -57,6 +61,11 @@ public class SocialMediaController {
         return ResponseEntity.status(HttpStatus.OK).body(account);
     }
 
+    /**
+     * The Post mapping at endpoint /login using the accountService to attempt a login with an account.
+     * @param account the account with username and password to be used for logging in
+     * @return the ResponseEntity<Account> object that returns status {OK if successful, 401 for failure} and the body of logged in account if successful else the account sent
+     */
     @PostMapping("/login")
     public ResponseEntity<Account> loginAccount(@RequestBody Account account) {
         Account loggedAccount = accountService.logIntoAccount(account);
@@ -66,6 +75,11 @@ public class SocialMediaController {
         return ResponseEntity.status(HttpStatus.OK).body(loggedAccount);
     }
 
+    /**
+     * The Post mapping at endpoint /messages using the messageService to attempt to post a message
+     * @param message the message to be posted
+     * @return the ResponseEntity<Message> object that returns status {OK for failure, 400 for failure} and the body of message to be posted
+     */
     @PostMapping("/messages")
     public ResponseEntity<Message> postMessage(@RequestBody Message message) {
         int posted_by = message.getPostedBy();
@@ -78,12 +92,21 @@ public class SocialMediaController {
         return ResponseEntity.status(400).body(message);
     }
 
+    /**
+     * The Get mapping at endpoint /messages using the messageService to retrieve all messages
+     * @return the ResponseEntity<List<Message>> object that returns status {OK} and the list of messages returned
+     */
     @GetMapping("/messages")
     public ResponseEntity<List<Message>> getMessages() {
         List<Message> loMessages = this.messageService.getAllMessages();
         return ResponseEntity.status(HttpStatus.OK).body(loMessages);
     }
 
+    /**
+     * The Get mapping at endpoint /messages/{message_id} using the messageService to retrieve a message by message id
+     * @param message_id the message id to look up message by
+     * @return the ResponseEntity<Message> object that returns status {OK} and the list of messages returned
+     */
     @GetMapping("/messages/{message_id}")
     public ResponseEntity<Message> getMessage(@PathVariable String message_id) {
         Optional<Message> message = this.messageService.getMessageByID(Integer.parseInt(message_id));
@@ -93,12 +116,23 @@ public class SocialMediaController {
         return ResponseEntity.status(HttpStatus.OK).body(message.get());
     }
 
+    /**
+     * The Get mapping at endpoint /messages/{account_id}/messages using the messageService to retrieve all message by account id
+     * @param account_id the account id to look up messages from
+     * @return the ResponseEntity<Account> object that returns status {OK} and the list of messages returned
+     */
     @GetMapping("/accounts/{account_id}/messages")
     public ResponseEntity<List<Message>> getMessagesByAccount(@PathVariable String account_id) {
         List<Message> loMessagesByAccountID = this.messageService.getMessagesByAccountID(Integer.parseInt(account_id));
         return ResponseEntity.status(HttpStatus.OK).body(loMessagesByAccountID);
     }
 
+    /**
+     * The Patch mapping at endpoint /messages/{message_id} using the messageService to update a message
+     * @param message_id the message id of the message to be udpated
+     * @param message the contents to replace the current message with
+     * @return the ResponseEntity<Integer> object that returns status {OK if successful, 400 if failure} and in the body either 1 if successful, 0 otherwise
+     */
     @PatchMapping("/messages/{message_id}")
     public ResponseEntity<Integer> updateMessage(@PathVariable String message_id, @RequestBody Message message) {
         if (this.messageService.updateMessage(Integer.parseInt(message_id), message)) {
@@ -108,6 +142,11 @@ public class SocialMediaController {
         }
     }
 
+    /**
+     * The Delete mapping at endpoint /messages/{message_id} using the messageService to delete a message
+     * @param message_id the message id of the message to be deleted
+     * @return the ResponseEntity<Integer> object that returns status {OK} and in the body either 1 if successful, nothing otherwise
+     */
     @DeleteMapping("/messages/{message_id}")
     public ResponseEntity<Integer> deleteMessage(@PathVariable String message_id) {
         if (this.messageService.deleteMessage(Integer.parseInt(message_id))) {
