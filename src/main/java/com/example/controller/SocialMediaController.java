@@ -49,7 +49,6 @@ public class SocialMediaController {
     public ResponseEntity<Account> postAccount(@RequestBody Account account) {
         if (this.accountService.usernameExists(account.getUsername())) {
             return ResponseEntity.status(409).body(account);
-
         }
         Account createdAccount = this.accountService.registerAccount(account);
         if (createdAccount == null) {
@@ -63,7 +62,6 @@ public class SocialMediaController {
         Account loggedAccount = accountService.logIntoAccount(account);
         if (loggedAccount == null) {
             return ResponseEntity.status(401).body(account);
-
         }
         return ResponseEntity.status(HttpStatus.OK).body(loggedAccount);
     }
@@ -72,7 +70,6 @@ public class SocialMediaController {
     public ResponseEntity<Message> postMessage(@RequestBody Message message) {
         int posted_by = message.getPostedBy();
         if (this.accountService.accountExists(posted_by)) {
-
             Message addedMessage = this.messageService.addMessage(message);
             if (addedMessage != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(message);
@@ -90,7 +87,7 @@ public class SocialMediaController {
     @GetMapping("/messages/{message_id}")
     public ResponseEntity<Message> getMessage(@PathVariable String message_id) {
         Optional<Message> message = this.messageService.getMessageByID(Integer.parseInt(message_id));
-        if (!message.isPresent()) {
+        if (message.isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(message.get());
@@ -113,12 +110,9 @@ public class SocialMediaController {
 
     @DeleteMapping("/messages/{message_id}")
     public ResponseEntity<Integer> deleteMessage(@PathVariable String message_id) {
-        try {
-            this.messageService.deleteMessage(Integer.parseInt(message_id));
+        if (this.messageService.deleteMessage(Integer.parseInt(message_id))) {
             return ResponseEntity.status(200).body(1);
-        } catch (Exception e) {
-            return ResponseEntity.status(200).build();
         }
-
+        return ResponseEntity.status(200).build();
     }
 }
